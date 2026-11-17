@@ -1,0 +1,17 @@
+name: Push gem
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+      - run: gem build texas-royalty-calc.gemspec
+      - run: gem push texas-royalty-calc-1.0.0.gem
