@@ -12,6 +12,16 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+      - name: Exchange OIDC token
+        id: rg
+        run: |
+          JWT=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=rubygems.org" | jq -r .value)
+          RESP=$(curl -s -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "{\"jwt\":\"$JWT\",\"owner\":256277}" https://rubygems.org/api/v1/oidc/trusted_publisher/exchange_token)
+          KEY=$(echo "$RESP" | jq -r .rubygems_api_key)
+          if [ -z "$KEY" ] || [ "$KEY" = "null" ]; then echo "$RESP"; exit 1; fi
+          echo "::add-mask::$KEY"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
       - run: gem build texas-royalty-calc.gemspec
       - run: gem push texas-royalty-calc-1.0.0.gem
+        env:
+          GEM_HOST_API_KEY: ${{ steps.rg.outputs.key }}
