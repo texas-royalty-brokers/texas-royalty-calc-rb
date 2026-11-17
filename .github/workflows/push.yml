@@ -16,7 +16,7 @@ jobs:
         id: rg
         run: |
           JWT=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=rubygems.org" | jq -r .value)
-          RESP=$(curl -s -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "{\"jwt\":\"$JWT\",\"owner\":256277}" https://rubygems.org/api/v1/oidc/trusted_publisher/exchange_token)
+          RESP=$(curl -s -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "{\"jwt\":\"$JWT\",\"owner\":\"256277\"}" https://rubygems.org/api/v1/oidc/trusted_publisher/exchange_token)
           KEY=$(echo "$RESP" | jq -r .rubygems_api_key)
           if [ -z "$KEY" ] || [ "$KEY" = "null" ]; then echo "$RESP"; exit 1; fi
           echo "::add-mask::$KEY"
